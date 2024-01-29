@@ -1,0 +1,60 @@
+# nginx testing
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    name: nginx
+spec:
+  selector:
+    matchLabels:
+      name: nginx
+  template:
+    metadata:
+      labels:
+        name: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21.6-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: mnt
+            mountPath: /usr/share/nginx/html/index.html
+            subPath: file-from-cfgmap
+      volumes:
+      - name: mnt
+        configMap:
+          name: nginx-cfgmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    name: nginx
+spec:
+  ports:
+    - port: 80
+  selector:
+    name: nginx
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-cfgmap
+data:
+  file-from-cfgmap: |
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <title>From config map</title>
+      </head>
+      <body>
+      
+        <h1>Loaded from config map!</h1>
+      
+      </body>
+    </html>
